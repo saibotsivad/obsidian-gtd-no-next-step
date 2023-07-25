@@ -21,12 +21,12 @@ I also use the [Tasks](https://publish.obsidian.md/tasks/) plugin, which lets yo
 
 This works well for me, because I can set up task queries for `#next-step` tagged tasks:
 
-```md
-\```tasks
+``````md
+```tasks
 not done
 tags includes #next-step
-\```
 ```
+``````
 
 I also use the `#waiting-for` tag to indicate things that are a Next Step but rely on an external party:
 

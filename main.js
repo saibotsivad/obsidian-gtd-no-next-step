@@ -11,7 +11,7 @@ const DEFAULT_SETTINGS = {
 
 const makeTaskRegex = tagString => new RegExp(`^\\s*-\\s{1,2}\\[\\s]\\s.*#${tagString}[\\W]*`, 'm')
 
-module.exports = class MyPlugin extends Plugin {
+module.exports = class GtdNoNextStep extends Plugin {
 	async onload() {
 		await this.loadSettings()
 		this.nextStepTagRegex = makeTaskRegex(this.settings.nextStepTag)
