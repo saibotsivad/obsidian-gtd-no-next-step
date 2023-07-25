@@ -1,0 +1,25 @@
+{
+  "name": "obsidian-gtd-no-next-step",
+  "version": "0.0.0",
+  "description": "Obsidian plugin for GTD workflow that adds a badge to projects with no defined next step.",
+  "main": "main.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/saibotsivad/obsidian-gtd-no-next-step.git"
+  },
+  "keywords": [
+    "obsidian",
+    "obsidian-plugin",
+    "gtd"
+  ],
+  "author": {
+    "name": "Tobias Davis",
+    "email": "tobias@davistobias.com",
+    "url": "https://davistobias.com"
+  },
+  "license": "VOL",
+  "bugs": {
+    "url": "https://github.com/saibotsivad/obsidian-gtd-no-next-step/issues"
+  },
+  "homepage": "https://github.com/saibotsivad/obsidian-gtd-no-next-step#readme"
+}
