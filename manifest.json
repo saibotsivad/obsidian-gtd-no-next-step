@@ -1,9 +1,9 @@
 {
   "id": "gtd-no-next-step",
   "name": "GTD No Next Step",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Adds a badge to Getting Things Done (GTD) \"project\" files with no defined next step.",
   "author": "saibotsivad",
-  "authorUrl": "https://github.com/saibotsivad/obsidian-gtd-no-next-step",
+  "authorUrl": "https://davistobias.com",
   "isDesktopOnly": false
 }
