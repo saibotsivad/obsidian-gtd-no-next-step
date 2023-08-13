@@ -1,6 +1,6 @@
 {
   "name": "obsidian-gtd-no-next-step",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Obsidian plugin that adds a badge to Getting Things Done (GTD) \"project\" files with no defined next step.",
   "main": "main.js",
   "repository": {
