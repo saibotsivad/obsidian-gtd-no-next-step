@@ -24,7 +24,7 @@ const updateFileBadges = (file, fileItem, isProjectFile) => {
 	}
 }
 
-module.exports = class MyPlugin extends Plugin {
+module.exports = class GtdNoNextStep extends Plugin {
 	async onload() {
 		await this.loadSettings()
 		// TODO make lazy
