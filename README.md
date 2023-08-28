@@ -2,7 +2,9 @@
 
 Obsidian plugin for GTD workflow that adds a badge to projects with no defined next step.
 
-> **Note:** Evan already made this plugin before me, they just finished "going live" like a day or so after and I didn't realize! His is much more fully featured and handles edge cases I hadn't even thought of, so go use that instead! https://github.com/Ebonsignori/obsidian-at-symbol-linking
+| :warning: Plugin already exists |
+|:-|
+| Evan already made this plugin before me, he just finished "going live" like a day or so after and I didn't realize! His is much more fully featured and handles edge cases I hadn't even thought of, so go use that instead! https://github.com/Ebonsignori/obsidian-at-symbol-linking |
 
 ## My GTD Workflow
 
