@@ -2,9 +2,36 @@
 
 Obsidian plugin for GTD workflow that adds a badge to projects with no defined next step.
 
-| :warning: Plugin already exists |
-|:-|
-| Evan already made this plugin before me, he just finished "going live" like a day or so after and I didn't realize! His is much more fully featured and handles edge cases I hadn't even thought of, so go use that instead! https://github.com/Ebonsignori/obsidian-at-symbol-linking |
+## Motivation for Plugin
+
+In the [GTD framework](https://en.wikipedia.org/wiki/Getting_Things_Done), a project is in a bad state if there is no clearly defined next actionable step defined for it, and if at the same time it is not waiting for some external trigger.
+
+This plugin simply looks at every "project" file and adds a red badge if there's not a task tagged as the next actionable, but if there's a task tagged as waiting for an external trigger it shows a gray badge. All other files display as normal.
+
+## What it Looks Like
+
+![](./example.png)
+
+Files with red badges would need examination and processing:
+- Maybe the project is actually complete and should be archived?
+- Maybe you haven't actually gone through the mental effort of deciding the next actionable step?
+- Perhaps you should double check the external "Waiting For" trigger?
+
+## Configuration
+
+This plugin currently only has the following configurable options:
+
+#### Projects folder
+
+The folder where project files live. Default: `Projects/`
+
+#### Next-Step tag
+
+The tag that indicates a task has a next step. Default: `#next-step`
+
+#### Waiting-For tag
+
+The tag that indicates a task is waiting for an external action. Default: `#waiting-for`
 
 ## My GTD Workflow
 
@@ -17,36 +44,40 @@ Projects/
 	Replace van windshield.md
 ```
 
-I also use the [Tasks](https://publish.obsidian.md/tasks/) plugin, which lets you add tasks like normal, and add views that query them:
+I also use the [Tasks](https://publish.obsidian.md/tasks/) plugin, which lets you add tasks with tags, and then later query those.
+
+For example, if I have a GTD-project likek `Projects/Replace van windshield.md` it might have, as the next actionable task:
 
 ```md
-- [ ] call Fred to get the phone number of the windshield place #next-step
+- [ ] call Fred to get the phone number of the windshield place he likes #next-step
 ```
 
-This works well for me, because I can set up task queries for `#next-step` tagged tasks:
+In various views I then query for incomplete tasks that have the `#next-step` tag:
 
 ``````md
 ```tasks
-not done
 tags includes #next-step
+not done
 ```
 ``````
 
-I also use the `#waiting-for` tag to indicate things that are a Next Step but rely on an external party:
+This plugin also has a `#waiting-for` tag, which is used to indicate things (technically [Tasks](https://publish.obsidian.md/tasks/)) that are in a state of waiting on an external actor of some kind:
 
 ```md
 - [ ] #waiting-for Fred to get back to me with the windshield guys number
 ```
 
-## Motivation for Plugin
+At various times I have used tags for people, so for example `#Fred-Smith`, in which case I can easily see what items are waiting on Fred for input:
 
-What I would like to know is whether there are any "projects" (files in the "Projects" folder) that do not have a Next Step, and are not Waiting For.
+``````md
+```tasks
+tags includes #waiting-for
+tags includes #Fred-Smith
+not done
+```
+``````
 
-These project files would need examination, probably some tidying: maybe the project is complete, or maybe I haven't actually gone through the mental effort of deciding the next step.
-
-## What it Looks Like
-
-![](./example.png)
+These two things form the basis for a large portion of my GTD-in-Obsidian workflow.
 
 ## License
 
