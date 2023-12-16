@@ -1,6 +1,6 @@
-# GTD: No Next Step
+# Obsidian Plugin - GTD: No Next Step
 
-Obsidian plugin for GTD workflow that adds a badge to projects with no defined next step.
+Obsidian plugin for GTD workflow that adds a badge to project files with no defined next step.
 
 ## Motivation for Plugin
 
@@ -24,6 +24,16 @@ This plugin currently only has the following configurable options:
 #### Projects folder
 
 The folder where project files live. Default: `Projects/`
+
+This plugin also works for all sub-folders as well, e.g.:
+
+```
+Projects/
+├── Big Project/
+│   ├── Some part of it.md
+│   └── Another part.md
+└── Single file project.md
+```
 
 #### Next-Step tag
 
