@@ -1,4 +1,4 @@
-const { Notice, Plugin, PluginSettingTab, Setting } = require('obsidian')
+const { Plugin, PluginSettingTab, Setting } = require('obsidian')
 
 const DEFAULT_SETTINGS = {
 	nextStepTag: '#next-step',
@@ -9,31 +9,79 @@ const DEFAULT_SETTINGS = {
 	},
 }
 
+function* stringLineIterator(string) {
+	let cursor = 0
+	let newlineIndex = string.indexOf('\n')
+	while (newlineIndex !== -1) {
+		yield string.substring(cursor, newlineIndex)
+		cursor = newlineIndex + 1
+		newlineIndex = string.indexOf('\n', cursor)
+	}
+	if (cursor < string.length) yield string.substring(cursor)
+}
+
+const CODE_FENCE_CHARS = /^`{3,}/
+function* stringLineIteratorNoCode(string) {
+	let codeFenceDepth = 0
+	for (let line of stringLineIterator(string)) {
+		let codeFenceCharCount = line.startsWith('```') && CODE_FENCE_CHARS.exec(line)[0].length
+		if (codeFenceDepth && codeFenceDepth === codeFenceCharCount) {
+			codeFenceDepth = 0
+		} else if (!codeFenceDepth && codeFenceCharCount) {
+			codeFenceDepth = codeFenceCharCount
+		} else if (!codeFenceDepth) {
+			yield line
+		}
+	}
+}
+
+const findNextStepOrWaitingFor = (string, nextStepTagRegex, waitingForTagRegex) => {
+	let hasNextStep = false
+	for (let line of stringLineIteratorNoCode(string)) {
+		if (line.includes('- [ ] ')) {
+			if (waitingForTagRegex.test(line)) return { hasWaitingFor: true }
+			if (nextStepTagRegex.test(line)) hasNextStep = true
+		}
+	}
+	return { hasNextStep }
+}
+
 const makeTaskRegex = tagString => new RegExp(`^\\s*-\\s{1,2}\\[\\s]\\s.*${tagString}[\\W]*`, 'm')
 
-const updateFileBadges = (file, fileItem, isProjectFile) => {
-	const { nextStep, waitingFor } = file || {}
-	if (isProjectFile && !nextStep && !waitingFor) {
+const clearAllBadges = (fileItem) => {
+	fileItem.coverEl.removeClass('gtd-no-next-step')
+	fileItem.coverEl.removeClass('gtd-waiting-for')
+}
+
+const paintFileBadge = (opts, fileItem) => {
+	const {nextStep, waitingFor} = opts || {}
+	if (!nextStep && !waitingFor) {
+		fileItem.coverEl.removeClass('gtd-waiting-for')
 		fileItem.coverEl.addClass('gtd-no-next-step')
-	} else if (isProjectFile && file.waitingFor) {
+	} else if (waitingFor) {
 		fileItem.coverEl.removeClass('gtd-no-next-step')
 		fileItem.coverEl.addClass('gtd-waiting-for')
 	} else {
-		fileItem.coverEl.removeClass('gtd-no-next-step')
-		fileItem.coverEl.removeClass('gtd-waiting-for')
+		clearAllBadges(fileItem)
 	}
 }
+
 
 module.exports = class GtdNoNextStep extends Plugin {
 	async onload() {
 		await this.loadSettings()
-		// TODO make lazy
 		this.nextStepTagRegex = makeTaskRegex(this.settings.nextStepTag)
 		this.waitingForTagRegex = makeTaskRegex(this.settings.waitingForTag)
 
-		this.registerEvent(this.app.vault.on('delete', async event => { await this.refreshFileBadges(event) }))
-		this.registerEvent(this.app.vault.on('rename', async event => { await this.refreshFileBadges(event) }))
-		this.registerEvent(this.app.vault.on('modify', async event => { await this.refreshFileBadges(event) }))
+		const handleEvent = (event, originalFilename) => {
+			if (!this.isProjectFile(event.path) && (!originalFilename || !this.isProjectFile(originalFilename))) return
+			this.updateFileCacheAndMaybeRepaintBadge(event, originalFilename).catch(error => {
+				console.error('Error while handling event!', error)
+			})
+		}
+		this.registerEvent(this.app.vault.on('delete', handleEvent))
+		this.registerEvent(this.app.vault.on('rename', handleEvent))
+		this.registerEvent(this.app.vault.on('modify', handleEvent))
 
 		this.app.workspace.onLayoutReady(this.initialize)
 		this.addSettingTab(new SettingTab(this.app, this))
@@ -51,40 +99,44 @@ module.exports = class GtdNoNextStep extends Plugin {
 		&& filename.endsWith('.md')
 		&& !filename.includes('/_')
 
-	containsIncompleteNextStep = string => this.nextStepTagRegex.test(string)
-	containsIncompleteWaitingFor = string => this.waitingForTagRegex.test(string)
+	containsIncompleteNextStepOrWaitingFor = string => findNextStepOrWaitingFor(string, this.nextStepTagRegex, this.waitingForTagRegex)
 
-	refreshFileBadges = async ({ path, stat, deleted, ...remaining }) => {
-		const cached = this.settings.projectFileCache[path] || {}
-		const pathIsProjectFile = this.isProjectFile(path)
-		let needToSave
-		let removeBadges
-		if (!deleted && pathIsProjectFile) {
-			const string = await this.app.vault.cachedRead(
-				this.app.vault.getAbstractFileByPath(path)
-			)
-			const nextStep = this.containsIncompleteNextStep(string)
-			if (cached?.nextStep !== nextStep) cached.nextStep = nextStep
-			const waitingFor = this.containsIncompleteWaitingFor(string)
-			if (cached?.waitingFor !== waitingFor) cached.waitingFor = waitingFor
-			cached.mtime = stat.mtime
-			needToSave = true
-		} else if (this.settings.projectFileCache[path]) {
-			delete this.settings.projectFileCache[path]
-			needToSave = true
-		}
-		if (needToSave) {
-			this.settings.projectFileCache[path] = cached
-			await this.saveSettings()
-		}
+	scheduleRepaintBadge = (path, clearAll) => {
 		window.setTimeout(() => {
 			const leaves = this.app.workspace.getLeavesOfType('file-explorer')
-			if (leaves?.[0]?.view?.fileItems?.[path])
-				updateFileBadges(cached, leaves[0].view.fileItems[path], pathIsProjectFile)
+			if (leaves?.[0]?.view?.fileItems?.[path]) {
+				if (clearAll) clearAllBadges(leaves[0].view.fileItems[path])
+				else paintFileBadge(this.settings.projectFileCache[path], leaves[0].view.fileItems[path])
+			}
 		})
 	}
 
-	refreshProjectBadges = async () => {
+	updateFileCacheAndMaybeRepaintBadge = async ({path, stat, deleted}, originalFilename) => {
+		if (deleted || !this.isProjectFile(path)) {
+			delete this.settings.projectFileCache[path]
+			delete this.settings.projectFileCache[originalFilename]
+			await this.saveSettings()
+			return this.scheduleRepaintBadge(path, true)
+		}
+		if (!deleted) {
+			const string = await this.app.vault.cachedRead(
+				this.app.vault.getAbstractFileByPath(path)
+			)
+			const {nextStep, waitingFor} = this.settings.projectFileCache[path] || {}
+			this.settings.projectFileCache[path] = this.settings.projectFileCache[path] || {}
+			this.settings.projectFileCache[path].mtime = stat.mtime
+			const { hasNextStep, hasWaitingFor } = this.containsIncompleteNextStepOrWaitingFor(string)
+			this.settings.projectFileCache[path].nextStep = hasNextStep
+			this.settings.projectFileCache[path].waitingFor = hasWaitingFor
+			await this.saveSettings()
+			if (
+				this.settings.projectFileCache[path].waitingFor !== waitingFor
+				|| this.settings.projectFileCache[path].nextStep !== nextStep
+			) this.scheduleRepaintBadge(path)
+		}
+	}
+
+	refreshAllFileBadges = async () => {
 		const projectFilesList = this
 			.app
 			.vault
@@ -100,12 +152,12 @@ module.exports = class GtdNoNextStep extends Plugin {
 			if (tFile.stat.mtime > (lastCache ? lastCache.mtime : 0)) {
 				needToSave = true
 				const string = await this.app.vault.cachedRead(tFile)
-				filesMap[tFile.path].nextStep = this.containsIncompleteNextStep(string)
-				filesMap[tFile.path].waitingFor = this.containsIncompleteWaitingFor(string)
+				const { hasNextStep, hasWaitingFor } = this.containsIncompleteNextStepOrWaitingFor(string)
+				filesMap[tFile.path].nextStep = hasNextStep
+				filesMap[tFile.path].waitingFor = hasWaitingFor
 			}
 		}
-		for (const path in this.settings.projectFileCache)
-			if (!filesMap[path]) needToSave = true
+		for (const path in this.settings.projectFileCache) if (!filesMap[path]) needToSave = true
 		if (needToSave) {
 			this.settings.projectFileCache = filesMap
 			await this.saveSettings()
@@ -114,13 +166,13 @@ module.exports = class GtdNoNextStep extends Plugin {
 		if (leaves?.length) {
 			const fileItems = leaves[0].view?.fileItems || {}
 			for (const f in fileItems) if (this.isProjectFile(f)) {
-				updateFileBadges(filesMap[f], fileItems[f], true)
+				paintFileBadge(filesMap[f], fileItems[f])
 			}
 		}
 	}
 
 	initialize = () => {
-		this.refreshProjectBadges().catch(error => {
+		this.refreshAllFileBadges().catch(error => {
 			console.error('Unexpected error in "gtd-no-next-step" plugin initialization.', error)
 		})
 	}
@@ -131,8 +183,9 @@ class SettingTab extends PluginSettingTab {
 		super(app, plugin)
 		this.plugin = plugin
 	}
+
 	display() {
-		const { containerEl } = this
+		const {containerEl} = this
 		containerEl.empty()
 		new Setting(containerEl)
 			.setName('Projects folder')

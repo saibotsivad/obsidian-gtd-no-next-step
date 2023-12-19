@@ -23,7 +23,9 @@ This plugin currently only has the following configurable options:
 
 #### Projects folder
 
-The folder where project files live. Default: `Projects/`
+The folder where project files live.
+
+Default: `Projects/`
 
 This plugin also works for all sub-folders as well, e.g.:
 
@@ -37,11 +39,15 @@ Projects/
 
 #### Next-Step tag
 
-The tag that indicates a task has a next step. Default: `#next-step`
+The tag that indicates a task has a next step.
+
+Default: `#next-step`
 
 #### Waiting-For tag
 
-The tag that indicates a task is waiting for an external action. Default: `#waiting-for`
+The tag that indicates a task is waiting for an external action.
+
+Default: `#waiting-for`
 
 ## My GTD Workflow
 

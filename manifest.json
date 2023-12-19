@@ -1,7 +1,7 @@
 {
   "id": "gtd-no-next-step",
   "name": "GTD No Next Step",
-  "version": "1.0.4",
+  "version": "1.1.0",
   "description": "Adds a badge to Getting Things Done (GTD) \"project\" files with no defined next step.",
   "author": "saibotsivad",
   "authorUrl": "https://davistobias.com",

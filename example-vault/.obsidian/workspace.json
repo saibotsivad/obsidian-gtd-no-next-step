@@ -1,0 +1,86 @@
+{
+  "main": {
+    "id": "487bd2982b5b1dce",
+    "type": "split",
+    "children": [
+      {
+        "id": "bfa372977a8b84fb",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "cfac32c7e03ebb33",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "Projects/Example.md",
+                "mode": "source",
+                "backlinks": false,
+                "source": false
+              }
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "vertical"
+  },
+  "left": {
+    "id": "ac6138c908bf2ef0",
+    "type": "split",
+    "children": [
+      {
+        "id": "902746e70cb575cc",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "aeeedd5116b7ef5a",
+            "type": "leaf",
+            "state": {
+              "type": "file-explorer",
+              "state": {
+                "sortOrder": "alphabetical"
+              }
+            }
+          },
+          {
+            "id": "22f163d7d3e086f0",
+            "type": "leaf",
+            "state": {
+              "type": "search",
+              "state": {
+                "query": "tag:#waiting-for"
+              }
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300
+  },
+  "right": {
+    "id": "ab6ae738fa12851d",
+    "type": "split",
+    "children": [],
+    "direction": "horizontal",
+    "width": 300,
+    "collapsed": true
+  },
+  "left-ribbon": {
+    "hiddenItems": {
+      "switcher:Open quick switcher": false,
+      "templates:Insert template": false,
+      "command-palette:Open command palette": false
+    }
+  },
+  "active": "cfac32c7e03ebb33",
+  "lastOpenFiles": [
+    "Hello World.md",
+    "Templates/Plugin Test.md",
+    "Projects/Example.md",
+    "test-2023-12-16.md",
+    "Projects",
+    "Templates"
+  ]
+}
